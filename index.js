@@ -10,7 +10,7 @@ if (require.main === module) {
       throw err
     }
 
-    if (branch !== 'master') {
+    if (branch.trim() !== 'master') {
       exec('git log --pretty=format:%s master..HEAD', (err, result) => {
         if (err) {
           throw err

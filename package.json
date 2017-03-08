@@ -1,7 +1,7 @@
 {
   "name": "@rushplay/validate-commit-msgs",
   "description": "Lint commit messages",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "bin": {
     "validate-commit-msgs": "./index.js"
   },

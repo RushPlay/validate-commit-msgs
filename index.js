@@ -5,13 +5,22 @@ const chalk = require('chalk')
 const meow = require('meow')
 const validateMessage = require('validate-commit-msg')
 
+function parseCommitString(string) {
+  const matches = string.match(/^(\w+)\s(.+)$/)
+  return {
+    sha: matches[1],
+    message: matches[2],
+  }
+}
+
 if (require.main === module) {
   const cli = meow(`
     Usage
       $ validate-commit-msgs
 
     Options
-      --base, -b  Base branch to compare with. Default is 'master'.
+      --base, -b     Base branch to compare with. Default is 'master'.
+      --print-valid  Print valid commit messages
 
     Examples
       $ validate-commit-msgs
@@ -29,26 +38,29 @@ if (require.main === module) {
 
     if (branch.trim() !== 'master') {
       const base = cli.flags.base || 'master'
-      exec(`git log --pretty=format:%s ${base}..HEAD`, (err, result) => {
+      exec(`git log --no-merges --pretty=format:"%h %s" ${base}..HEAD`, (err, result) => {
         if (err) {
           throw err
         }
 
         const invalidCommits = result.split('\n')
+          .map(parseCommitString)
           .filter((commit) => {
-            const valid = validateMessage(commit)
+            const valid = validateMessage(commit.message)
 
             if (valid) {
-              console.log(chalk.green(`✔ ${commit}`))
+              if (cli.flags.printValid) {
+                console.log(chalk.green(`✔ ${commit.message}\n`))
+              }
             } else {
-              console.log(chalk.red(`❌ ${commit}`))
+              console.log(chalk.red(`✖ SHA: ${commit.sha}\n`))
             }
 
             return !valid
           })
 
         if (invalidCommits.length) {
-          throw new Error('Some commits don’t match the format `type: message`')
+          process.exit(1)
         }
       })
     }

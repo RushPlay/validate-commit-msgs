@@ -43,24 +43,26 @@ if (require.main === module) {
           throw err
         }
 
-        const invalidCommits = result.split('\n')
-          .map(parseCommitString)
-          .filter((commit) => {
-            const valid = validateMessage(commit.message)
+        if (result) {
+          const invalidCommits = result.split('\n')
+            .map(parseCommitString)
+            .filter((commit) => {
+              const valid = validateMessage(commit.message)
 
-            if (valid) {
-              if (cli.flags.printValid) {
-                console.log(chalk.green(`✔ ${commit.message}\n`))
+              if (valid) {
+                if (cli.flags.printValid) {
+                  console.log(chalk.green(`✔ ${commit.message}\n`))
+                }
+              } else {
+                console.log(chalk.red(`✖ SHA: ${commit.sha}\n`))
               }
-            } else {
-              console.log(chalk.red(`✖ SHA: ${commit.sha}\n`))
-            }
 
-            return !valid
-          })
+              return !valid
+            })
 
-        if (invalidCommits.length) {
-          process.exit(1)
+          if (invalidCommits.length) {
+            process.exit(1)
+          }
         }
       })
     }
